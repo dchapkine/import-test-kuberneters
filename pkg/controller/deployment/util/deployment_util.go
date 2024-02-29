@@ -41,6 +41,7 @@ import (
 	"k8s.io/kubernetes/pkg/controller"
 	labelsutil "k8s.io/kubernetes/pkg/util/labels"
 	"k8s.io/utils/integer"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -712,6 +713,17 @@ func GetAvailableReplicaCountForReplicaSets(replicaSets []*apps.ReplicaSet) int3
 		}
 	}
 	return totalAvailableReplicas
+}
+
+// GetTerminatingReplicaCountForReplicaSets returns the number of terminating pods for all replica sets.
+func GetTerminatingReplicaCountForReplicaSets(replicaSets []*apps.ReplicaSet) int32 {
+	terminatingReplicas := int32(0)
+	for _, rs := range replicaSets {
+		if rs != nil {
+			terminatingReplicas += ptr.Deref(rs.Status.TerminatingReplicas, 0)
+		}
+	}
+	return terminatingReplicas
 }
 
 // IsRollingUpdate returns true if the strategy type is a rolling update.
