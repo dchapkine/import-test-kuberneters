@@ -470,17 +470,22 @@ func (p *RemoteRuntime) GetContainerEvents(req *runtimeapi.GetEventsRequest, ces
 	containerEventsResponseCh := make(chan *runtimeapi.ContainerEventResponse, plegChannelCapacity)
 	defer close(containerEventsResponseCh)
 
-	if err := p.runtimeService.GetContainerEvents(context.Background(), containerEventsResponseCh, nil); err != nil {
-		return err
-	}
+	for {
+		if err := p.runtimeService.GetContainerEvents(context.Background(), containerEventsResponseCh, nil); err != nil {
+			return err
+		}
 
-	for event := range containerEventsResponseCh {
-		if err := ces.Send(event); err != nil {
-			return status.Errorf(codes.Unknown, "Failed to send event: %v", err)
+		var got bool
+		for event := range containerEventsResponseCh {
+			got = true
+			if err := ces.Send(event); err != nil {
+				return status.Errorf(codes.Unknown, "Failed to send event: %v", err)
+			}
+		}
+		if got {
+			return nil
 		}
 	}
-
-	return nil
 }
 
 // ListMetricDescriptors gets the descriptors for the metrics that will be returned in ListPodSandboxMetrics.
