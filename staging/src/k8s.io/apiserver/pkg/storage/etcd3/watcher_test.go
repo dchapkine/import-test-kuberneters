@@ -122,6 +122,7 @@ func TestWatchWithUnsafeDelete(t *testing.T) {
 // setting allowWatchBookmarks query param against
 // etcd implementation doesn't have any effect.
 func TestWatchDispatchBookmarkEvents(t *testing.T) {
+	t.Parallel()
 	clusterConfig := testserver.NewTestConfig(t)
 	clusterConfig.ExperimentalWatchProgressNotifyInterval = time.Second
 	ctx, store, _ := testSetup(t, withClientConfig(clusterConfig))
